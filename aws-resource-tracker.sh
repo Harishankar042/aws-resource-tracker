@@ -4,40 +4,72 @@
 #
 #
 # Author : Harishankar
-# date : 22 Jan 2025
+# date : Jan 2025
 #
 # use-case : AWS resource usage report
 #
 #
 # ################################
 #
-# AWS S3 bucket
-# AWS EC2 instance
-# AWS lambda
-# AWS IAM users
-#
+# 1. AWS S3 bucket
+# 2. AWS EC2 instance
+# 3. AWS lambda
+# 4. AWS IAM users
+
+#######################################################
 set -x
-#
-# list of s3 buckets #
 
-echo "Below is the list of s3 buckets"
+# checking the number of arguments passed #
+if [$# -ne 2]
+then
+  echo "Usage: $0 <region> <service-name>"
+  exit 1
+fi
 
-aws s3 ls
+# Assigning the arguments to variables #
+region=$1
+service=$2
 
-# list of ec2 instances #
+# checking the aws cli installation #
+if ! command -v aws &> /dev/null
+then
+    echo "AWS CLI could not installed. Please install the AWS CLI"
+    exit 1
+fi
 
-echo "Below is the list of ec2 instances"
+# checking the aws cli configuration #
 
-aws ec2 describe-instances
+if [ ! -d ~/.aws ]
+then
+  echo "AWS CLI is not configured. Please configure the AWS CLI"
+  exit 1
+fi
 
-# list of lambda functions #
+# Listing the resources based on the service name #
 
-echo "Below is the list of lambda functions"
+case aws $service in
+  s3)
+    echo "Below is the list of s3 buckets"
+    aws s3 ls --region $region
+    ;;
 
-aws lambda-functions
+  ec2)
+    echo "Below is the list of ec2 instances"
+    aws ec2 describe-instances --region $region
+    ;;
 
-# list of IAM users #
+  lambda)
+    echo "Below is the list of lambda functions"
+    aws lambda list-functions --region $region
+    ;;
 
-echo "Below is the list of IAM users"
+  iam)
+    echo "Below is the list of IAM users"
+    aws iam list-users --region $region
+    ;;
 
-aws iam list-users
+  *)
+    echo "Invalid service name"
+    exit 1
+    ;;
+esac 
